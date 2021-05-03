@@ -3,6 +3,7 @@
 #include <vector>
 #include <functional>
 #include <sys/types.h>
+#include <sys/user.h>
 
 namespace PTrace {
 
@@ -24,9 +25,10 @@ class Tracee {
 friend class TraceApi;
 
 public:
-    pid_t getPid() { return m_pid; }
+    pid_t get_pid() { return m_pid; }
     void cont(int signal);
-    /* functions */
+    user_regs_struct get_registers();
+    std::string read_string(unsigned long long addr);
 
 protected:
     Tracee(pid_t pid);
