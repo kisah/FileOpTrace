@@ -72,7 +72,11 @@ void SyscallHandler::trace_handler(Tracee& tracee, int status) {
         std::string path;
         switch(regs.orig_rax) {
             case __NR_chdir:
-                m_cwd = tracee.read_string(regs.rdi);
+                path = tracee.read_string(regs.rdi);
+                if(path.length() && path[0] != '/')
+                    m_cwd = resolve_path(path, tracee.get_pid(), AT_FDCWD);
+                else
+                    m_cwd = path;
                 break;
             case __NR_openat:
                 ret_fd = static_cast<int>(tracee.syscall_ret_value());
