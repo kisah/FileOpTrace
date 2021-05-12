@@ -55,6 +55,7 @@ void SyscallHandler::remove_fd(pid_t pid, int fd) {
 std::string SyscallHandler::resolve_path(std::string& path, pid_t pid, int parent_fd) {
     std::string parent_path;
     std::array<char, PATH_MAX> buf;
+    buf.fill(0);
 
     if(parent_fd == AT_FDCWD)
         parent_path = m_cwd;
