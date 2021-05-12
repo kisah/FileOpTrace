@@ -85,6 +85,10 @@ void SyscallHandler::trace_handler(Tracee& tracee, int status) {
                 else
                     m_cwd = path;
                 break;
+            case __NR_fchdir:
+                path = path_for_fd(tracee.get_pid(), static_cast<int>(regs.rdi));
+                if(path != ":unknown:")
+                    m_cwd = path;
             case __NR_openat:
                 ret_fd = static_cast<int>(tracee.syscall_ret_value());
                 path = tracee.read_string(regs.rsi);

@@ -11,6 +11,9 @@ struct sock_filter filter[] = {
     BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_chdir, 0, 1),
     BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_TRACE),
 
+    BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_fchdir, 0, 1),
+    BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_TRACE),
+
     BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_open, 0, 1),
     BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_TRACE),
 
