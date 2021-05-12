@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fcntl.h>
 #include <limits.h>
 #include <sys/wait.h>
 #include <sys/ptrace.h>
@@ -18,6 +19,7 @@ SyscallHandler::SyscallHandler(TraceApi& tracer, Logger& logger) : m_logger(logg
     });
 }
 
+//FIXME: map paths by fd and pid instead of just fd
 std::string SyscallHandler::path_for_fd(pid_t pid, int fd) {
     auto iter = m_fd_map.find(fd);
     if(iter != m_fd_map.end())
@@ -44,10 +46,25 @@ void SyscallHandler::remove_fd(int fd) {
         m_fd_map.erase(iter);
 }
 
-//TODO: Proper path resolution
+std::string SyscallHandler::resolve_path(std::string& path, pid_t pid, int parent_fd) {
+    std::string parent_path;
+    std::array<char, PATH_MAX> buf;
+
+    if(parent_fd == AT_FDCWD)
+        parent_path = m_cwd;
+    else
+        parent_path = path_for_fd(pid, parent_fd);
+    if(parent_path[parent_path.length() - 1] != '/')
+        parent_path += '/';
+    auto path_concat = parent_path + path;
+    if(!realpath(path_concat.c_str(), buf.data()))
+        return ":unknown:";
+
+    return std::string(buf.data());
+}
+
 void SyscallHandler::trace_handler(Tracee& tracee, int status) {
     if(WSTOPSIG(status) == SIGTRAP && (status >> 16) == PTRACE_EVENT_SECCOMP) {
-        //std::cout << "syscall handler triggered\n";
         user_regs_struct regs = tracee.get_registers();
         int ret_fd;
         int fd;
@@ -60,8 +77,13 @@ void SyscallHandler::trace_handler(Tracee& tracee, int status) {
             case __NR_openat:
                 ret_fd = static_cast<int>(tracee.syscall_ret_value());
                 path = tracee.read_string(regs.rsi);
-                //std::cout << "openat parent_fd: " << static_cast<int>(regs.rdi) << ", path: \"" << tracee.read_string(regs.rsi) << "\", ret_fd: " << ret_fd << "\n";
-                if(m_fd_map.find(ret_fd) == m_fd_map.end())
+                if(ret_fd < 0) {
+                    m_logger.open_failed(tracee.get_binpath(), tracee.get_pid(), path, static_cast<int>(regs.rdx), -ret_fd);
+                    break;
+                }
+                if(path.length() && path[0] != '/')
+                    path = resolve_path(path, tracee.get_pid(), static_cast<int>(regs.rdi));
+                if(ret_fd >= 0 && m_fd_map.find(ret_fd) == m_fd_map.end())
                     m_fd_map.emplace(ret_fd, path);
                 m_logger.open(tracee.get_binpath(), tracee.get_pid(), path, static_cast<int>(regs.rdx), ret_fd);
                 break;
