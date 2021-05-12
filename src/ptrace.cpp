@@ -1,32 +1,22 @@
-#include "ptrace.h"
-#include "bpf.h"
 #include <algorithm>
 #include <unistd.h>
 #include <sys/ptrace.h>
 #include <sys/wait.h>
 #include <stdio.h>
 #include <string.h>
+#include "ptrace.h"
+#include "bpf.h"
 
 using namespace PTrace;
-
-bool TraceApi::attach(pid_t pid) {
-    if(ptrace(PTRACE_ATTACH, pid, NULL, NULL))
-        return false;
-    ptrace(PTRACE_SETOPTIONS, pid, NULL, PTRACE_O_EXITKILL | PTRACE_O_TRACEEXEC);
-    Tracee tracee(pid);
-    m_procs.emplace_back(tracee);
-    return true;
-}
 
 bool TraceApi::exec(std::string path, std::vector<std::string> args) {
     pid_t pid = fork();
     if(pid == 0) {
-        int i = 0;
-        char** argv = static_cast<char**>(malloc(sizeof(char*) * (args.size() + 1)));
+        std::vector<char*> argv;
         for(std::string arg : args) {
-            argv[i++] = strdup(arg.c_str());
+            argv.emplace_back(strdup(arg.c_str()));
         }
-        argv[i] = NULL;
+        argv.emplace_back(nullptr);
 
         ptrace(PTRACE_TRACEME, NULL, NULL, NULL);
 
@@ -35,10 +25,10 @@ bool TraceApi::exec(std::string path, std::vector<std::string> args) {
             exit(1);
         }
 
-        execv(path.c_str(), argv);
+        execv(path.c_str(), argv.data());
     }
     else if(pid > 0) {
-        Tracee tracee(pid);
+        Tracee tracee(pid, path);
         int status;
         waitpid(pid, &status, 0);
         if(WSTOPSIG(status) != SIGTRAP)
@@ -53,6 +43,7 @@ bool TraceApi::exec(std::string path, std::vector<std::string> args) {
     return false;
 }
 
+//TODO: fork/clone and exec handling
 bool TraceApi::loop() {
     int status = 0;
     std::vector<pid_t> endedTracees;
@@ -74,7 +65,7 @@ bool TraceApi::loop() {
     return m_procs.size() > 0;
 }
 
-Tracee::Tracee(pid_t pid) : m_pid(pid) {}
+Tracee::Tracee(pid_t pid, std::string binpath) : m_pid(pid), m_binpath(binpath) {}
 
 void Tracee::cont(int signal) {
     ptrace(PTRACE_CONT, get_pid(), NULL, signal);
@@ -100,5 +91,14 @@ std::string Tracee::read_string(unsigned long long addr) {
         addr += 8;
     } while(!contains_null_byte(tmp));
 
-    return std::string(static_cast<char*>(static_cast<void*>(readbuf.data())));
+    return std::string(reinterpret_cast<char*>(readbuf.data()));
+}
+
+unsigned long long Tracee::syscall_ret_value() {
+    int status;
+
+    ptrace(PTRACE_SYSCALL, get_pid(), NULL, 0);
+    waitpid(get_pid(), &status, 0);
+
+    return get_registers().rax;
 }

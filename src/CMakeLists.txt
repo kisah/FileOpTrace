@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10.0)
 #add_executable(proj_test test.cpp lib.cpp)
-add_executable(fileoptrace main.cpp ptrace.cpp bpf.cpp syscall.cpp)
+add_executable(fileoptrace main.cpp ptrace.cpp bpf.cpp stdlogger.cpp syscall.cpp)
 #target_link_libraries(proj_test PUBLIC doctest::doctest default)
 target_link_libraries(fileoptrace PUBLIC doctest::doctest default)
 #doctest_discover_tests(proj_test)

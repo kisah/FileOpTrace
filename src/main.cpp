@@ -1,13 +1,15 @@
 #include <iostream>
 #include "ptrace.h"
+#include "stdlogger.h"
 #include "syscall.h"
 
 using namespace PTrace;
 
 int main() {
     TraceApi traceApi;
-    SyscallHandler sysHandler(traceApi);
-    if(!traceApi.exec("/bin/cat", std::vector<std::string>{ "cat", "/tmp/test" })) {
+    StdErrLogger logger;
+    SyscallHandler sysHandler(traceApi, logger);
+    if(!traceApi.exec("/bin/cat", { "cat", "/tmp/test" })) {
         std::cout << "Failed to start a process\n";
         return 1;
     }
