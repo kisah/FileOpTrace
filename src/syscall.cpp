@@ -19,9 +19,15 @@ SyscallHandler::SyscallHandler(TraceApi& tracer, Logger& logger) : m_logger(logg
     });
 }
 
-//FIXME: map paths by fd and pid instead of just fd
+void SyscallHandler::add_fd_path(pid_t pid, int fd, std::string& path) {
+    auto pair = std::make_pair(pid, fd);
+    if(m_fd_map.find(pair) == m_fd_map.end())
+        m_fd_map.emplace(pair, path);
+}
+
 std::string SyscallHandler::path_for_fd(pid_t pid, int fd) {
-    auto iter = m_fd_map.find(fd);
+    auto pair = std::make_pair(pid, fd);
+    auto iter = m_fd_map.find(pair);
     if(iter != m_fd_map.end())
         return (*iter).second;
     else {
@@ -32,7 +38,7 @@ std::string SyscallHandler::path_for_fd(pid_t pid, int fd) {
         snprintf(fd_path.data(), fd_path.size(), "/proc/%d/fd/%d", pid, fd);
         if(readlink(fd_path.data(), buf.data(), buf.size()) >= 0) {
             std::string path(buf.data());
-            m_fd_map.emplace(fd, path);
+            m_fd_map.emplace(pair, path);
             return path;
         }
         else
@@ -40,8 +46,8 @@ std::string SyscallHandler::path_for_fd(pid_t pid, int fd) {
     }
 }
 
-void SyscallHandler::remove_fd(int fd) {
-    auto iter = m_fd_map.find(fd);
+void SyscallHandler::remove_fd(pid_t pid, int fd) {
+    auto iter = m_fd_map.find(std::make_pair(pid, fd));
     if(iter != m_fd_map.end())
         m_fd_map.erase(iter);
 }
@@ -87,14 +93,14 @@ void SyscallHandler::trace_handler(Tracee& tracee, int status) {
                 }
                 if(path.length() && path[0] != '/')
                     path = resolve_path(path, tracee.get_pid(), static_cast<int>(regs.rdi));
-                if(ret_fd >= 0 && m_fd_map.find(ret_fd) == m_fd_map.end())
-                    m_fd_map.emplace(ret_fd, path);
+                if(ret_fd >= 0)
+                    add_fd_path(tracee.get_pid(), ret_fd, path);
                 m_logger.open(tracee.get_binpath(), tracee.get_pid(), path, static_cast<int>(regs.rdx), ret_fd);
                 break;
             case __NR_close:
                 fd = static_cast<int>(regs.rdi);
                 path = path_for_fd(tracee.get_pid(), fd);
-                remove_fd(fd);
+                remove_fd(tracee.get_pid(), fd);
                 m_logger.close(tracee.get_binpath(), tracee.get_pid(), path, fd);
                 break;
             default:
