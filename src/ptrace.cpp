@@ -1,5 +1,7 @@
 #include <algorithm>
+#include <limits.h>
 #include <unistd.h>
+#include <syscall.h>
 #include <sys/ptrace.h>
 #include <sys/wait.h>
 #include <stdio.h>
@@ -33,7 +35,7 @@ bool TraceApi::exec(std::string path, std::vector<std::string> args) {
         waitpid(pid, &status, 0);
         if(WSTOPSIG(status) != SIGTRAP)
             return false; //This should never happen
-        ptrace(PTRACE_SETOPTIONS, tracee.get_pid(), NULL, PTRACE_O_EXITKILL | PTRACE_O_TRACEEXEC | PTRACE_O_TRACESECCOMP);
+        ptrace(PTRACE_SETOPTIONS, tracee.get_pid(), NULL, PTRACE_O_EXITKILL | PTRACE_O_TRACEEXEC | PTRACE_O_TRACECLONE | PTRACE_O_TRACEFORK | PTRACE_O_TRACESECCOMP);
         ptrace(PTRACE_CONT, pid, NULL, NULL);
 
         m_procs.emplace_back(tracee);
@@ -43,23 +45,59 @@ bool TraceApi::exec(std::string path, std::vector<std::string> args) {
     return false;
 }
 
-//TODO: fork/clone and exec handling
+std::string TraceApi::binpath_for_pid(pid_t pid) {
+    std::array<char, 128> exe_path;
+    std::array<char, PATH_MAX> buf;
+        
+    buf.fill(0);
+    snprintf(exe_path.data(), exe_path.size(), "/proc/%d/exe", pid);
+    if(readlink(exe_path.data(), buf.data(), buf.size()) < 0)
+        return ":unknown:";
+    return std::string(buf.data());
+}
+
 bool TraceApi::loop() {
     int status = 0;
     std::vector<pid_t> endedTracees;
+    std::vector<Tracee> toAdd;
 
     for(Tracee tracee : m_procs) {
         if(waitpid(tracee.get_pid(), &status, WNOHANG) == -1)
             endedTracees.emplace_back(tracee.get_pid());
-        if(status)
+        if(WSTOPSIG(status) == SIGTRAP && ((status >> 16) == PTRACE_EVENT_CLONE || (status >> 16) == PTRACE_EVENT_FORK)) {
+            pid_t child_pid;
+            ptrace(PTRACE_GETEVENTMSG, tracee.get_pid(), NULL, &child_pid);
+            Tracee t(child_pid, tracee.get_binpath());
+            t.set_flag(true);
+            toAdd.emplace_back(t);
+            tracee.cont(0);
+        }
+        else if(WSTOPSIG(status) == SIGTRAP && (status >> 16) == PTRACE_EVENT_EXEC) {
+            tracee.set_flag(true);
+            tracee.cont(0);
+        }
+        else if(WSTOPSIG(status) == SIGSTOP && tracee.get_flag()) {
+            tracee.set_flag(false);
+            tracee.cont(0);
+        }
+        else if(status) {
+            if(tracee.get_flag()) {
+                tracee.set_binpath(binpath_for_pid(tracee.get_pid()));
+                tracee.set_flag(false);
+            }
             if(m_eventHandler)
                 m_eventHandler(tracee, status);
+        }
     }
 
     if(endedTracees.size()) {
         m_procs.erase(std::remove_if(m_procs.begin(), m_procs.end(), [endedTracees](Tracee t) {
             return std::find(endedTracees.begin(), endedTracees.end(), t.get_pid()) != endedTracees.end();
         }), m_procs.end());
+    }
+
+    for(auto t : toAdd) {
+        m_procs.emplace_back(t);
     }
 
     return m_procs.size() > 0;

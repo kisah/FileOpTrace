@@ -9,7 +9,7 @@ int main() {
     TraceApi traceApi;
     StdErrLogger logger;
     SyscallHandler sysHandler(traceApi, logger);
-    if(!traceApi.exec("/bin/cat", { "cat", "/tmp/test" })) {
+    if(!traceApi.exec("/bin/sh", { "sh" })) {
         std::cout << "Failed to start a process\n";
         return 1;
     }
