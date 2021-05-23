@@ -10,6 +10,8 @@ target_compile_features(default INTERFACE cxx_std_17)
 include(cmake/CompilerWarnings.cmake)
 set_project_warnings(default)
 
+add_subdirectory(external/CLI11)
+
 enable_testing()
 add_subdirectory(external/doctest)
 include(external/doctest/doctest.cmake)

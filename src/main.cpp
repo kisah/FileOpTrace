@@ -1,4 +1,5 @@
 #include <iostream>
+#include <CLI/CLI.hpp>
 #include "ptrace.h"
 #include "stdlogger.h"
 #include "syscall.h"
