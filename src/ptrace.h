@@ -31,8 +31,6 @@ public:
     pid_t get_pid() { return m_pid; }
     std::string get_binpath() { return m_binpath; }
     void set_binpath(std::string binpath) { m_binpath = binpath; }
-    bool get_flag() { return m_flag; }
-    void set_flag(bool flag) { m_flag = flag; }
     void cont(int signal);
     user_regs_struct get_registers();
     std::string read_string(unsigned long long addr);
@@ -40,6 +38,8 @@ public:
 
 protected:
     Tracee(pid_t pid, std::string binpath);
+    bool get_flag() { return m_flag; }
+    void set_flag(bool flag) { m_flag = flag; }
     
 private:
     pid_t m_pid;

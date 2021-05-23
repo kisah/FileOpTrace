@@ -11,11 +11,11 @@ void StdErrLogger::open_failed(std::string binpath, pid_t pid, std::string path,
 }
 
 void StdErrLogger::read(std::string binpath, pid_t pid, std::string path, int fd, size_t len) {
-    //TODO
+    std::cerr << "[\"" << binpath << "\" (PID: " << pid << ")] read " << len << " bytes from path: \"" << path << "\", fd: " << fd << "\n";
 }
 
 void StdErrLogger::write(std::string binpath, pid_t pid, std::string path, int fd, size_t len) {
-    //TODO
+    std::cerr << "[\"" << binpath << "\" (PID: " << pid << ")] written " << len << " bytes to path: \"" << path << "\", fd: " << fd << "\n";
 }
 
 void StdErrLogger::close(std::string binpath, pid_t pid, std::string path, int fd) {

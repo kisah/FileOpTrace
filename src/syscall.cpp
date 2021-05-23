@@ -103,6 +103,14 @@ void SyscallHandler::trace_handler(Tracee& tracee, int status) {
                     add_fd_path(tracee.get_pid(), ret_fd, path);
                 m_logger.open(tracee.get_binpath(), tracee.get_pid(), path, static_cast<int>(regs.rdx), ret_fd);
                 break;
+            case __NR_read:
+                fd = static_cast<int>(regs.rdi);
+                m_logger.read(tracee.get_binpath(), tracee.get_pid(), path_for_fd(tracee.get_pid(), fd), fd, tracee.syscall_ret_value());
+                break;
+            case __NR_write:
+                fd = static_cast<int>(regs.rdi);
+                m_logger.write(tracee.get_binpath(), tracee.get_pid(), path_for_fd(tracee.get_pid(), fd), fd, tracee.syscall_ret_value());
+                break;
             case __NR_close:
                 fd = static_cast<int>(regs.rdi);
                 path = path_for_fd(tracee.get_pid(), fd);
