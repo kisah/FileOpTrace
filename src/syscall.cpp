@@ -9,7 +9,7 @@
 
 using namespace PTrace;
 
-SyscallHandler::SyscallHandler(TraceApi& tracer, Logger& logger) : m_logger(logger) {
+SyscallHandler::SyscallHandler(TraceApi& tracer, Logger* logger) : m_logger(*logger) {
     std::array<char, PATH_MAX> buf;
     getcwd(buf.data(), buf.size());
     m_cwd = std::string(buf.data());

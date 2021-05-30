@@ -6,7 +6,7 @@
 
 class SyscallHandler {
 public:
-    SyscallHandler(PTrace::TraceApi& tracer, Logger& logger);
+    SyscallHandler(PTrace::TraceApi& tracer, Logger* logger);
     
 protected:
     void add_fd_path(pid_t pid, int fd, std::string& path);
