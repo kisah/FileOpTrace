@@ -101,7 +101,7 @@ void SyscallHandler::trace_handler(Tracee& tracee, int status) {
                     path = resolve_path(path, tracee.get_pid(), static_cast<int>(regs.rdi));
                 if(ret_fd >= 0)
                     add_fd_path(tracee.get_pid(), ret_fd, path);
-                m_logger.open(tracee.get_binpath(), tracee.get_pid(), path, static_cast<int>(regs.rdx), ret_fd);
+                m_logger.open(tracee.get_binpath(), tracee.get_pid(), path, static_cast<int>(regs.rdx) & 3, ret_fd);
                 break;
             case __NR_read:
                 fd = static_cast<int>(regs.rdi);
