@@ -57,7 +57,7 @@ void TestLogger::expect_open_failed(pid_t pid, std::string path, int mode, int e
     auto record = m_records.front();
     m_records.pop_front();
 
-    if(record.type != RECORD_OPEN)
+    if(record.type != RECORD_OPEN_ERROR)
         throw "Record type doesn't match";
 
     if(record.pid != pid && pid != -1)
