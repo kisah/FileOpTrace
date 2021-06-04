@@ -28,3 +28,7 @@ void PipeLogger::write(std::string binpath, pid_t pid, std::string path, int fd,
 void PipeLogger::close(std::string binpath, pid_t pid, std::string path, int fd) {
     m_pipe << "[\"" << binpath << "\" (PID: " << pid << ")] " << "close: \"" << path << "\", fd: " << fd << std::endl;
 }
+
+void PipeLogger::remove(std::string binpath, pid_t pid, std::string path) {
+    m_pipe << "[\"" << binpath << "\" (PID: " << pid << ")] " << "remove: \"" << path << "\"" << std::endl;
+}

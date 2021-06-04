@@ -21,3 +21,7 @@ void StdErrLogger::write(std::string binpath, pid_t pid, std::string path, int f
 void StdErrLogger::close(std::string binpath, pid_t pid, std::string path, int fd) {
     std::cerr << "[\"" << binpath << "\" (PID: " << pid << ")] " << "close: \"" << path << "\", fd: " << fd << std::endl;
 }
+
+void StdErrLogger::remove(std::string binpath, pid_t pid, std::string path) {
+    std::cerr << "[\"" << binpath << "\" (PID: " << pid << ")] " << "remove: \"" << path << "\"" << std::endl;
+}

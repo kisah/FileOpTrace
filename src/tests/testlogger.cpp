@@ -30,6 +30,11 @@ void TestLogger::close(std::string binpath, pid_t pid, std::string path, int fd)
         m_records.emplace_back(OpRecord(RECORD_CLOSE, pid, path, 0, 0, 0));
 }
 
+void TestLogger::remove(std::string binpath, pid_t pid, std::string path) {
+    if(m_active)
+        m_records.emplace_back(OpRecord(RECORD_REMOVE, pid, path, 0, 0, 0));
+}
+
 void TestLogger::expect_open(pid_t pid, std::string path, int mode) {
     if(!m_records.size())
         throw "Record list is empty";
@@ -121,6 +126,23 @@ void TestLogger::expect_close(pid_t pid, std::string path) {
     m_records.pop_front();
 
     if(record.type != RECORD_CLOSE)
+        throw "Record type doesn't match";
+
+    if(record.pid != pid && pid != -1)
+        throw "Process id doesn't match";
+
+    if(record.path != path)
+        throw "Path doesn't match";
+}
+
+void TestLogger::expect_remove(pid_t pid, std::string path) {
+    if(!m_records.size())
+        throw "Record list is empty";
+    
+    auto record = m_records.front();
+    m_records.pop_front();
+
+    if(record.type != RECORD_REMOVE)
         throw "Record type doesn't match";
 
     if(record.pid != pid && pid != -1)

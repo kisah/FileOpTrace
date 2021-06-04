@@ -10,7 +10,8 @@ enum RecordType {
     RECORD_OPEN_ERROR,
     RECORD_READ,
     RECORD_WRITE,
-    RECORD_CLOSE
+    RECORD_CLOSE,
+    RECORD_REMOVE
 };
 
 struct OpRecord {
@@ -31,12 +32,14 @@ public:
     virtual void read(std::string binpath, pid_t pid, std::string path, int fd, size_t len);
     virtual void write(std::string binpath, pid_t pid, std::string path, int fd, size_t len);
     virtual void close(std::string binpath, pid_t pid, std::string path, int fd);
+    virtual void remove(std::string binpath, pid_t pid, std::string path);
 
     void expect_open(pid_t pid, std::string path, int mode);
     void expect_open_failed(pid_t pid, std::string path, int mode, int error);
     void expect_read(pid_t pid, std::string path, size_t len);
     void expect_write(pid_t pid, std::string path, size_t len);
     void expect_close(pid_t pid, std::string path);
+    void expect_remove(pid_t pid, std::string path);
     void expect_empty_list();
 private:
     bool m_active = false;
