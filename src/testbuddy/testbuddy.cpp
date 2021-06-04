@@ -30,6 +30,20 @@ void test_nonexistent() {
     open("doesntexist", O_RDONLY);
 }
 
+void test_chdir() {
+    chdir("dir");
+    int fd = open("hello", O_RDWR);
+    close(fd);
+}
+
+void test_fchdir() {
+    DIR* dir = opendir("dir");
+    fchdir(dirfd(dir));
+    int fd = open("hello", O_RDWR);
+    close(fd);
+    closedir(dir);
+}
+
 int main(int argc, char** argv) {
     if(argc < 2) {
         std::cerr << "Usage: testbuddy <test name>" << std::endl;
@@ -49,6 +63,10 @@ int main(int argc, char** argv) {
         test_openatfd();
     else if(test == "nonexistent")
         test_nonexistent();
+    else if(test == "chdir")
+        test_chdir();
+    else if(test == "fchdir")
+        test_fchdir();
 
     close(-10); //mark the end of tests
     return 0;
