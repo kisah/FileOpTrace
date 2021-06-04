@@ -119,7 +119,10 @@ void SyscallHandler::trace_handler(Tracee& tracee, int status) {
                 break;
             case __NR_unlink:
             case __NR_rmdir:
-                m_logger.remove(tracee.get_binpath(), tracee.get_pid(), tracee.read_string(regs.rdi));
+                path = tracee.read_string(regs.rdi);
+                if(path.length() && path[0] != '/')
+                    path = resolve_path(path, tracee.get_pid(), AT_FDCWD);
+                m_logger.remove(tracee.get_binpath(), tracee.get_pid(), path);
                 break;
             case __NR_unlinkat:
                 path = tracee.read_string(regs.rsi);
