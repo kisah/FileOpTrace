@@ -174,3 +174,98 @@ TEST_CASE("Fchdir") {
 
     REQUIRE_NOTHROW(logger.expect_empty_list());
 }
+
+TEST_CASE("Unlink") {
+    TestLogger logger;
+    std::array<char, PATH_MAX> buf;
+    std::string full_path;
+
+    REQUIRE(!close(open("hello", O_WRONLY | O_CREAT, 0644)));
+    
+    buf.fill(0);
+    realpath("hello", buf.data());
+    full_path = std::string(buf.data());
+    CHECK(full_path.length() > 0);
+
+    CHECK(run_and_wait(&logger, "../testbuddy/testbuddy", { "testbuddy", "unlink" }));
+
+    unlink("hello");
+
+    CHECK_NOTHROW(logger.expect_remove(-1, full_path));
+
+    REQUIRE_NOTHROW(logger.expect_empty_list());
+}
+
+TEST_CASE("Unlinkat cwd") {
+    TestLogger logger;
+    std::array<char, PATH_MAX> buf;
+    std::string full_path;
+
+    REQUIRE(!close(open("hello", O_WRONLY | O_CREAT, 0644)));
+    
+    buf.fill(0);
+    realpath("hello", buf.data());
+    full_path = std::string(buf.data());
+    CHECK(full_path.length() > 0);
+
+    CHECK(run_and_wait(&logger, "../testbuddy/testbuddy", { "testbuddy", "unlinkatcwd" }));
+
+    unlink("hello");
+
+    CHECK_NOTHROW(logger.expect_remove(-1, full_path));
+
+    REQUIRE_NOTHROW(logger.expect_empty_list());
+}
+
+TEST_CASE("Unlinkat with a directory fd") {
+    TestLogger logger;
+    std::array<char, PATH_MAX> buf;
+    std::string file_path;
+    std::string dir_path;
+
+    REQUIRE(mkdir("dir", 0755) >= 0);
+
+    CHECK(!close(open("dir/hello", O_WRONLY | O_CREAT, 0644)));
+    
+    buf.fill(0);
+    realpath("dir/hello", buf.data());
+    file_path = std::string(buf.data());
+    CHECK(file_path.length() > 0);
+
+    buf.fill(0);
+    realpath("dir", buf.data());
+    dir_path = std::string(buf.data());
+    CHECK(dir_path.length() > 0);
+
+    CHECK(run_and_wait(&logger, "../testbuddy/testbuddy", { "testbuddy", "unlinkat" }));
+
+    unlink("dir/hello");
+    rmdir("dir");
+
+    CHECK_NOTHROW(logger.expect_open(-1, dir_path, O_RDONLY));
+    CHECK_NOTHROW(logger.expect_remove(-1, file_path));
+    CHECK_NOTHROW(logger.expect_close(-1, dir_path));
+
+    REQUIRE_NOTHROW(logger.expect_empty_list());
+}
+
+TEST_CASE("Rmdir") {
+    TestLogger logger;
+    std::array<char, PATH_MAX> buf;
+    std::string full_path;
+
+    REQUIRE(mkdir("dir", 0755) >= 0);
+    
+    buf.fill(0);
+    realpath("dir", buf.data());
+    full_path = std::string(buf.data());
+    CHECK(full_path.length() > 0);
+
+    CHECK(run_and_wait(&logger, "../testbuddy/testbuddy", { "testbuddy", "rmdir" }));
+
+    rmdir("dir");
+
+    CHECK_NOTHROW(logger.expect_remove(-1, full_path));
+
+    REQUIRE_NOTHROW(logger.expect_empty_list());
+}

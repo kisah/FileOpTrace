@@ -44,6 +44,24 @@ void test_fchdir() {
     closedir(dir);
 }
 
+void test_unlink() {
+    unlink("hello");
+}
+
+void test_unlinkatcwd() {
+    unlinkat(AT_FDCWD, "hello", 0);
+}
+
+void test_unlinkat() {
+    DIR* dir = opendir("dir");
+    unlinkat(dirfd(dir), "hello", 0);
+    closedir(dir);
+}
+
+void test_rmdir() {
+    rmdir("dir");
+}
+
 int main(int argc, char** argv) {
     if(argc < 2) {
         std::cerr << "Usage: testbuddy <test name>" << std::endl;
@@ -67,6 +85,14 @@ int main(int argc, char** argv) {
         test_chdir();
     else if(test == "fchdir")
         test_fchdir();
+    else if(test == "unlink")
+        test_unlink();
+    else if(test == "unlinkatcwd")
+        test_unlinkatcwd();
+    else if(test == "unlinkat")
+        test_unlinkat();
+    else if(test == "rmdir")
+        test_rmdir();
 
     close(-10); //mark the end of tests
     return 0;
