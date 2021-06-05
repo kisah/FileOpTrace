@@ -1,3 +1,4 @@
+#include <fcntl.h>
 #include <string.h>
 #include <unistd.h>
 #include "pipelogger.h"
@@ -10,7 +11,8 @@ bool PipeLogger::connect(std::string pipe_path) {
 }
 
 void PipeLogger::open(std::string binpath, pid_t pid, std::string path, int mode, int fd) {
-    m_pipe << "[\"" << binpath << "\" (PID: " << pid << ")] " << "open at path: \"" << path << "\", fd: " << fd << std::endl;
+    auto str_mode = mode == O_RDONLY ? "read" : (mode == O_WRONLY ? "write" : "read/write");
+    m_pipe << "[\"" << binpath << "\" (PID: " << pid << ")] " << "open at path: \"" << path << "\" for " << str_mode << ", fd: " << fd << std::endl;
 }
 
 void PipeLogger::open_failed(std::string binpath, pid_t pid, std::string path, int mode, int error) {
