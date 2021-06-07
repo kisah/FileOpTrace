@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include <limits.h>
 #include <sys/types.h>
 #include <sys/user.h>
 
@@ -33,7 +34,7 @@ public:
     void set_binpath(std::string binpath) { m_binpath = binpath; }
     void cont(int signal);
     user_regs_struct get_registers();
-    std::string read_string(unsigned long long addr);
+    std::string read_string(unsigned long long addr, size_t max_len = PATH_MAX);
     unsigned long long syscall_ret_value();
 
 protected:

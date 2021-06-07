@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <limits.h>
 #include <unistd.h>
 #include <syscall.h>
 #include <sys/ptrace.h>
@@ -115,7 +114,8 @@ user_regs_struct Tracee::get_registers() {
     return regs;
 }
 
-std::string Tracee::read_string(unsigned long long addr) {
+std::string Tracee::read_string(unsigned long long addr, size_t max_len) {
+    unsigned long long cur_addr = addr;
     std::vector<long> readbuf;
     long tmp;
 
@@ -124,10 +124,10 @@ std::string Tracee::read_string(unsigned long long addr) {
     };
     
     do {
-        tmp = ptrace(PTRACE_PEEKDATA, get_pid(), addr, NULL);
+        tmp = ptrace(PTRACE_PEEKDATA, get_pid(), cur_addr, NULL);
         readbuf.emplace_back(tmp);
-        addr += 8;
-    } while(!contains_null_byte(tmp));
+        cur_addr += 8;
+    } while(!contains_null_byte(tmp) && (cur_addr - addr) <= max_len);
 
     return std::string(reinterpret_cast<char*>(readbuf.data()));
 }

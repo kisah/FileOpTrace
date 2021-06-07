@@ -285,6 +285,8 @@ TEST_CASE("Fork") {
     CHECK(main > 0);
     CHECK(child > 0);
 
+    unlink("/tmp/testpids");
+
     CHECK_NOTHROW(logger.expect_open(child, "/dev/null", O_WRONLY));
     CHECK_NOTHROW(logger.expect_close(child, "/dev/null"));
     CHECK_NOTHROW(logger.expect_open(main, "/dev/null", O_WRONLY));
