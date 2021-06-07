@@ -77,6 +77,7 @@ void SyscallHandler::trace_handler(Tracee& tracee, int status) {
         int fd;
         std::map<int, std::string>::iterator iter;
         std::string path;
+        std::string path2;
         switch(regs.orig_rax) {
             case __NR_chdir:
                 path = tracee.read_string(regs.rdi);
@@ -124,11 +125,44 @@ void SyscallHandler::trace_handler(Tracee& tracee, int status) {
                     path = resolve_path(path, tracee.get_pid(), AT_FDCWD);
                 m_logger.remove(tracee.get_binpath(), tracee.get_pid(), path);
                 break;
+            case __NR_rename:
+                path = tracee.read_string(regs.rdi);
+                path2 = tracee.read_string(regs.rsi);
+                if(path.length() && path[0] != '/')
+                    path = resolve_path(path, tracee.get_pid(), AT_FDCWD);
+                if(path2.length() && path2[0] != '/')
+                    path2 = resolve_path(path2, tracee.get_pid(), AT_FDCWD);
+                m_logger.rename(tracee.get_binpath(), tracee.get_pid(), path, path2);
+                break;
+            case __NR_renameat:
+            case __NR_renameat2:
+                path = tracee.read_string(regs.rsi);
+                path2 = tracee.read_string(regs.r10);
+                if(path.length() && path[0] != '/')
+                    path = resolve_path(path, tracee.get_pid(), static_cast<int>(regs.rdi));
+                if(path2.length() && path2[0] != '/')
+                    path2 = resolve_path(path2, tracee.get_pid(), static_cast<int>(regs.rdx));
+                m_logger.rename(tracee.get_binpath(), tracee.get_pid(), path, path2);
+                break;
+                break;
             case __NR_unlinkat:
                 path = tracee.read_string(regs.rsi);
                 if(path.length() && path[0] != '/')
                     path = resolve_path(path, tracee.get_pid(), static_cast<int>(regs.rdi));
                 m_logger.remove(tracee.get_binpath(), tracee.get_pid(), path);
+                break;
+            case __NR_mkdir:
+                path = tracee.read_string(regs.rdi);
+                if(path.length() && path[0] != '/')
+                    path = resolve_path(path, tracee.get_pid(), AT_FDCWD);
+                m_logger.mkdir(tracee.get_binpath(), tracee.get_pid(), path);
+                break;
+            case __NR_mkdirat:
+                path = tracee.read_string(regs.rsi);
+                if(path.length() && path[0] != '/')
+                    path = resolve_path(path, tracee.get_pid(), static_cast<int>(regs.rdi));
+                m_logger.mkdir(tracee.get_binpath(), tracee.get_pid(), path);
+                break;
             default:
                 break;
         }

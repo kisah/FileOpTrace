@@ -24,6 +24,14 @@ void StdErrLogger::close(std::string binpath, pid_t pid, std::string path, int f
     std::cerr << "[\"" << binpath << "\" (PID: " << pid << ")] " << "close: \"" << path << "\", fd: " << fd << std::endl;
 }
 
+void StdErrLogger::rename(std::string binpath, pid_t pid, std::string old_path, std::string new_path) {
+    std::cerr << "[\"" << binpath << "\" (PID: " << pid << ")] " << "rename: \"" << old_path << "\" to \"" << new_path << "\"" << std::endl;
+}
+
 void StdErrLogger::remove(std::string binpath, pid_t pid, std::string path) {
     std::cerr << "[\"" << binpath << "\" (PID: " << pid << ")] " << "remove: \"" << path << "\"" << std::endl;
+}
+
+void StdErrLogger::mkdir(std::string binpath, pid_t pid, std::string path) {
+    std::cerr << "[\"" << binpath << "\" (PID: " << pid << ")] " << "mkdir: \"" << path << "\"" << std::endl;
 }

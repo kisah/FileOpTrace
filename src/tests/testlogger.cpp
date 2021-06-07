@@ -5,34 +5,44 @@ using namespace Tests;
 
 void TestLogger::open(std::string binpath, pid_t pid, std::string path, int mode, int fd) {
     if(m_active)
-        m_records.emplace_back(OpRecord(RECORD_OPEN, pid, path, mode, 0, 0));
+        m_records.emplace_back(OpRecord(RECORD_OPEN, pid, path, "", mode, 0, 0));
 }
 
 void TestLogger::open_failed(std::string binpath, pid_t pid, std::string path, int mode, int error) {
     if(m_active)
-        m_records.emplace_back(OpRecord(RECORD_OPEN_ERROR, pid, path, mode, 0, error));
+        m_records.emplace_back(OpRecord(RECORD_OPEN_ERROR, pid, path, "", mode, 0, error));
 }
 
 void TestLogger::read(std::string binpath, pid_t pid, std::string path, int fd, size_t len) {
     if(m_active)
-        m_records.emplace_back(OpRecord(RECORD_READ, pid, path, 0, len, 0));
+        m_records.emplace_back(OpRecord(RECORD_READ, pid, path, "", 0, len, 0));
 }
 
 void TestLogger::write(std::string binpath, pid_t pid, std::string path, int fd, size_t len) {
     if(m_active)
-        m_records.emplace_back(OpRecord(RECORD_WRITE, pid, path, 0, len, 0));
+        m_records.emplace_back(OpRecord(RECORD_WRITE, pid, path, "", 0, len, 0));
 }
 
 void TestLogger::close(std::string binpath, pid_t pid, std::string path, int fd) {
     if(fd == -10)
         m_active = !m_active;
     else if(m_active)
-        m_records.emplace_back(OpRecord(RECORD_CLOSE, pid, path, 0, 0, 0));
+        m_records.emplace_back(OpRecord(RECORD_CLOSE, pid, path, "", 0, 0, 0));
+}
+
+void TestLogger::rename(std::string binpath, pid_t pid, std::string old_path, std::string new_path) {
+    if(m_active)
+        m_records.emplace_back(OpRecord(RECORD_RENAME, pid, old_path, new_path, 0, 0, 0));
 }
 
 void TestLogger::remove(std::string binpath, pid_t pid, std::string path) {
     if(m_active)
-        m_records.emplace_back(OpRecord(RECORD_REMOVE, pid, path, 0, 0, 0));
+        m_records.emplace_back(OpRecord(RECORD_REMOVE, pid, path, "", 0, 0, 0));
+}
+
+void TestLogger::mkdir(std::string binpath, pid_t pid, std::string path) {
+    if(m_active)
+        m_records.emplace_back(OpRecord(RECORD_MKDIR, pid, path, "", 0, 0, 0));
 }
 
 void TestLogger::expect_open(pid_t pid, std::string path, int mode) {
@@ -135,6 +145,26 @@ void TestLogger::expect_close(pid_t pid, std::string path) {
         throw "Path doesn't match";
 }
 
+void TestLogger::expect_rename(pid_t pid, std::string old_path, std::string new_path) {
+    if(!m_records.size())
+        throw "Record list is empty";
+    
+    auto record = m_records.front();
+    m_records.pop_front();
+
+    if(record.type != RECORD_RENAME)
+        throw "Record type doesn't match";
+
+    if(record.pid != pid && pid != -1)
+        throw "Process id doesn't match";
+
+    if(record.path != old_path)
+        throw "Old path doesn't match";
+
+    if(record.path2 != new_path)
+        throw "New path doesn't match";
+}
+
 void TestLogger::expect_remove(pid_t pid, std::string path) {
     if(!m_records.size())
         throw "Record list is empty";
@@ -143,6 +173,23 @@ void TestLogger::expect_remove(pid_t pid, std::string path) {
     m_records.pop_front();
 
     if(record.type != RECORD_REMOVE)
+        throw "Record type doesn't match";
+
+    if(record.pid != pid && pid != -1)
+        throw "Process id doesn't match";
+
+    if(record.path != path)
+        throw "Path doesn't match";
+}
+
+void TestLogger::expect_mkdir(pid_t pid, std::string path) {
+    if(!m_records.size())
+        throw "Record list is empty";
+    
+    auto record = m_records.front();
+    m_records.pop_front();
+
+    if(record.type != RECORD_MKDIR)
         throw "Record type doesn't match";
 
     if(record.pid != pid && pid != -1)

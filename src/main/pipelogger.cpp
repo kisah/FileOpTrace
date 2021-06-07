@@ -31,6 +31,14 @@ void PipeLogger::close(std::string binpath, pid_t pid, std::string path, int fd)
     m_pipe << "[\"" << binpath << "\" (PID: " << pid << ")] " << "close: \"" << path << "\", fd: " << fd << std::endl;
 }
 
+void PipeLogger::rename(std::string binpath, pid_t pid, std::string old_path, std::string new_path) {
+    m_pipe << "[\"" << binpath << "\" (PID: " << pid << ")] " << "rename: \"" << old_path << "\" to \"" << new_path << "\"" << std::endl;
+}
+
 void PipeLogger::remove(std::string binpath, pid_t pid, std::string path) {
     m_pipe << "[\"" << binpath << "\" (PID: " << pid << ")] " << "remove: \"" << path << "\"" << std::endl;
+}
+
+void PipeLogger::mkdir(std::string binpath, pid_t pid, std::string path) {
+    m_pipe << "[\"" << binpath << "\" (PID: " << pid << ")] " << "mkdir: \"" << path << "\"" << std::endl;
 }

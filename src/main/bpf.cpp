@@ -29,6 +29,15 @@ struct sock_filter filter[] = {
     BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_close, 0, 1),
     BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_TRACE),
 
+    BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_rename, 0, 1),
+    BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_TRACE),
+
+    BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_renameat, 0, 1),
+    BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_TRACE),
+
+    BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_renameat2, 0, 1),
+    BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_TRACE),
+
     BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_unlink, 0, 1),
     BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_TRACE),
 
@@ -36,6 +45,12 @@ struct sock_filter filter[] = {
     BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_TRACE),
 
     BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_rmdir, 0, 1),
+    BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_TRACE),
+
+    BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_mkdir, 0, 1),
+    BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_TRACE),
+
+    BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_mkdirat, 0, 1),
     BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_TRACE),
 
     BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW)
