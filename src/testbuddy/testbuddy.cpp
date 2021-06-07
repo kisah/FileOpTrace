@@ -1,6 +1,8 @@
+#include <fstream>
 #include <iostream>
 #include <string>
 #include <fcntl.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #include <dirent.h>
 
@@ -63,9 +65,22 @@ void test_rmdir() {
 }
 
 int main(int argc, char** argv) {
+    pid_t pid = 0;
+
     if(argc < 2) {
-        std::cerr << "Usage: testbuddy <test name>" << std::endl;
+        std::cerr << "Usage: testbuddy <test name> [fork: 0/1]" << std::endl;
         return 1;
+    }
+
+    if(argc >= 3 && atoi(argv[2]) == 1) {
+        pid = fork();
+        if(pid) {
+            int status;
+            wait(&status);
+        }
+        else if(pid < 0) {
+            return 1;
+        }
     }
     
     close(-10); //mark the beggining of tests
@@ -95,5 +110,10 @@ int main(int argc, char** argv) {
         test_rmdir();
 
     close(-10); //mark the end of tests
+
+    if(pid) {
+        std::ofstream pidInfo("/tmp/testpids");
+        pidInfo << getpid() << " " << pid;
+    }
     return 0;
 }

@@ -1,3 +1,4 @@
+#include <fstream>
 #include <fcntl.h>
 #include <limits.h>
 #include <sys/stat.h>
@@ -266,6 +267,28 @@ TEST_CASE("Rmdir") {
     rmdir("dir");
 
     CHECK_NOTHROW(logger.expect_remove(-1, full_path));
+
+    REQUIRE_NOTHROW(logger.expect_empty_list());
+}
+
+TEST_CASE("Fork") {
+    TestLogger logger;
+
+    REQUIRE(run_and_wait(&logger, "../testbuddy/testbuddy", { "testbuddy", "simple", "1" }));
+
+    CHECK(!access("/tmp/testpids", F_OK));
+
+    pid_t main;
+    pid_t child;
+    std::ifstream pidInfo("/tmp/testpids");
+    pidInfo >> main >> child;
+    CHECK(main > 0);
+    CHECK(child > 0);
+
+    CHECK_NOTHROW(logger.expect_open(child, "/dev/null", O_WRONLY));
+    CHECK_NOTHROW(logger.expect_close(child, "/dev/null"));
+    CHECK_NOTHROW(logger.expect_open(main, "/dev/null", O_WRONLY));
+    CHECK_NOTHROW(logger.expect_close(main, "/dev/null"));
 
     REQUIRE_NOTHROW(logger.expect_empty_list());
 }
