@@ -176,6 +176,81 @@ TEST_CASE("Fchdir") {
     REQUIRE_NOTHROW(logger.expect_empty_list());
 }
 
+TEST_CASE("Rename") {
+    TestLogger logger;
+    std::array<char, PATH_MAX> buf;
+    std::string dir_path;
+    std::string old_path;
+    std::string new_path;
+
+    REQUIRE(!close(open("hello", O_WRONLY | O_CREAT, 0644)));
+    
+    buf.fill(0);
+    realpath(".", buf.data());
+    dir_path = std::string(buf.data());
+    CHECK(dir_path.length() > 0);
+    old_path = dir_path + "/hello";
+    new_path = dir_path + "/hello2";
+
+    CHECK(run_and_wait(&logger, "../testbuddy/testbuddy", { "testbuddy", "rename" }));
+
+    unlink("hello2");
+
+    CHECK_NOTHROW(logger.expect_rename(-1, old_path, new_path));
+
+    REQUIRE_NOTHROW(logger.expect_empty_list());
+}
+
+TEST_CASE("Renameat") {
+    TestLogger logger;
+    std::array<char, PATH_MAX> buf;
+    std::string dir_path;
+    std::string old_path;
+    std::string new_path;
+
+    REQUIRE(!close(open("hello", O_WRONLY | O_CREAT, 0644)));
+    
+    buf.fill(0);
+    realpath(".", buf.data());
+    dir_path = std::string(buf.data());
+    CHECK(dir_path.length() > 0);
+    old_path = dir_path + "/hello";
+    new_path = dir_path + "/hello2";
+
+    CHECK(run_and_wait(&logger, "../testbuddy/testbuddy", { "testbuddy", "renameat" }));
+
+    unlink("hello2");
+
+    CHECK_NOTHROW(logger.expect_rename(-1, old_path, new_path));
+
+    REQUIRE_NOTHROW(logger.expect_empty_list());
+}
+
+TEST_CASE("Renameat2") {
+    TestLogger logger;
+    std::array<char, PATH_MAX> buf;
+    std::string dir_path;
+    std::string old_path;
+    std::string new_path;
+
+    REQUIRE(!close(open("hello", O_WRONLY | O_CREAT, 0644)));
+    
+    buf.fill(0);
+    realpath(".", buf.data());
+    dir_path = std::string(buf.data());
+    CHECK(dir_path.length() > 0);
+    old_path = dir_path + "/hello";
+    new_path = dir_path + "/hello2";
+
+    CHECK(run_and_wait(&logger, "../testbuddy/testbuddy", { "testbuddy", "renameat2" }));
+
+    unlink("hello2");
+
+    CHECK_NOTHROW(logger.expect_rename(-1, old_path, new_path));
+
+    REQUIRE_NOTHROW(logger.expect_empty_list());
+}
+
 TEST_CASE("Unlink") {
     TestLogger logger;
     std::array<char, PATH_MAX> buf;

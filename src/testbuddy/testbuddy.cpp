@@ -47,6 +47,18 @@ void test_fchdir() {
     closedir(dir);
 }
 
+void test_rename() {
+    rename("hello", "hello2");
+}
+
+void test_renameat() {
+    renameat(AT_FDCWD, "hello", AT_FDCWD, "hello2");
+}
+
+void test_renameat2() {
+    renameat2(AT_FDCWD, "hello", AT_FDCWD, "hello2", 0);
+}
+
 void test_unlink() {
     unlink("hello");
 }
@@ -115,6 +127,12 @@ int main(int argc, char** argv) {
         test_chdir();
     else if(test == "fchdir")
         test_fchdir();
+    else if(test == "rename")
+        test_rename();
+    else if(test == "renameat")
+        test_renameat();
+    else if(test == "renameat2")
+        test_renameat2();
     else if(test == "unlink")
         test_unlink();
     else if(test == "unlinkatcwd")
@@ -136,5 +154,6 @@ int main(int argc, char** argv) {
         std::ofstream pidInfo("/tmp/testpids");
         pidInfo << getpid() << " " << pid;
     }
+    
     return 0;
 }
