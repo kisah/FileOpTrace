@@ -271,6 +271,69 @@ TEST_CASE("Rmdir") {
     REQUIRE_NOTHROW(logger.expect_empty_list());
 }
 
+TEST_CASE("Mkdir") {
+    TestLogger logger;
+    std::array<char, PATH_MAX> buf;
+    std::string full_path;
+    
+    buf.fill(0);
+    realpath(".", buf.data());
+    full_path = std::string(buf.data());
+    CHECK(full_path.length() > 0);
+    full_path += "/dir";
+
+    CHECK(run_and_wait(&logger, "../testbuddy/testbuddy", { "testbuddy", "mkdir" }));
+
+    rmdir("dir");
+
+    CHECK_NOTHROW(logger.expect_mkdir(-1, full_path));
+
+    REQUIRE_NOTHROW(logger.expect_empty_list());
+}
+
+TEST_CASE("Mkdirat cwd") {
+    TestLogger logger;
+    std::array<char, PATH_MAX> buf;
+    std::string full_path;
+    
+    buf.fill(0);
+    realpath(".", buf.data());
+    full_path = std::string(buf.data());
+    CHECK(full_path.length() > 0);
+    full_path += "/dir";
+
+    CHECK(run_and_wait(&logger, "../testbuddy/testbuddy", { "testbuddy", "mkdiratcwd" }));
+
+    rmdir("dir");
+
+    CHECK_NOTHROW(logger.expect_mkdir(-1, full_path));
+
+    REQUIRE_NOTHROW(logger.expect_empty_list());
+}
+
+TEST_CASE("Mkdirat") {
+    TestLogger logger;
+    std::array<char, PATH_MAX> buf;
+    std::string parent_dir_path;
+    std::string full_path;
+    
+    buf.fill(0);
+    realpath("..", buf.data());
+    parent_dir_path = std::string(buf.data());
+    CHECK(parent_dir_path.length() > 0);
+    full_path = parent_dir_path + "/dir";
+
+    CHECK(run_and_wait(&logger, "../testbuddy/testbuddy", { "testbuddy", "mkdirat" }));
+
+    rmdir("../dir");
+
+    CHECK_NOTHROW(logger.expect_open(-1, parent_dir_path, O_RDONLY));
+    CHECK_NOTHROW(logger.expect_mkdir(-1, full_path));
+    CHECK_NOTHROW(logger.expect_close(-1, parent_dir_path));
+
+    REQUIRE_NOTHROW(logger.expect_empty_list());
+}
+
 TEST_CASE("Fork") {
     TestLogger logger;
 

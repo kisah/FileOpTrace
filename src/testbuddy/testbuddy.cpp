@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <fcntl.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
 #include <dirent.h>
@@ -64,6 +65,20 @@ void test_rmdir() {
     rmdir("dir");
 }
 
+void test_mkdir() {
+    mkdir("dir", 0755);
+}
+
+void test_mkdiratcwd() {
+    mkdirat(AT_FDCWD, "dir", 0755);
+}
+
+void test_mkdirat() {
+    DIR* dir = opendir("..");
+    mkdirat(dirfd(dir), "dir", 0755);
+    closedir(dir);
+}
+
 int main(int argc, char** argv) {
     pid_t pid = 0;
 
@@ -108,6 +123,12 @@ int main(int argc, char** argv) {
         test_unlinkat();
     else if(test == "rmdir")
         test_rmdir();
+    else if(test == "mkdir")
+        test_mkdir();
+    else if(test == "mkdiratcwd")
+        test_mkdiratcwd();
+    else if(test == "mkdirat")
+        test_mkdirat();
 
     close(-10); //mark the end of tests
 
