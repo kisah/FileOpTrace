@@ -65,7 +65,7 @@ std::string SyscallHandler::resolve_path(std::string& path, pid_t pid, int paren
         parent_path += '/';
     auto path_concat = parent_path + path;
     if(!realpath(path_concat.c_str(), buf.data()))
-        return ":unknown:";
+        return path_concat;
 
     return std::string(buf.data());
 }
