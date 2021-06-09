@@ -7,6 +7,26 @@
 #include <unistd.h>
 #include <dirent.h>
 
+void call_testhandler(const void* arg) {
+    asm("int3" : : "a"(arg));
+}
+
+void test_string() {
+    call_testhandler("This is a string");
+}
+
+void test_string_cap() {
+    std::string str(25, 'a');
+    str += 'b';
+    call_testhandler(str.c_str());
+}
+
+void test_string_def() {
+    std::string str(PATH_MAX, 'a');
+    str += 'b';
+    call_testhandler(str.c_str());
+}
+
 void test_simple() {
     int fd = open("/dev/null", O_WRONLY);
     close(fd);
@@ -113,7 +133,13 @@ int main(int argc, char** argv) {
     close(-10); //mark the beggining of tests
 
     std::string test(argv[1]);
-    if(test == "simple")
+    if(test == "string")
+        test_string();
+    else if(test == "string_cap")
+        test_string_cap();
+    else if(test == "string_def")
+        test_string_def();
+    else if(test == "simple")
         test_simple();
     else if(test == "relative")
         test_relative();

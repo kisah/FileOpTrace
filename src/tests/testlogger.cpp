@@ -1,5 +1,4 @@
 #include "testlogger.h"
-#include <iostream>
 
 using namespace Tests;
 

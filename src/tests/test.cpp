@@ -1,3 +1,4 @@
+#include <iostream>
 #include <fstream>
 #include <fcntl.h>
 #include <limits.h>
@@ -6,6 +7,7 @@
 #include "doctest.h"
 #include "../main/ptrace.h"
 #include "../main/syscall.h"
+#include "testhandler.h"
 #include "testlogger.h"
 
 using namespace FileOpTrace;
@@ -22,6 +24,48 @@ bool run_and_wait(Logger* logger, std::string path, std::vector<std::string> arg
     while(traceApi.loop());
 
     return true;
+}
+
+TEST_CASE("PTrace string") {
+    TraceApi traceApi;
+    TestHandler testHandler(traceApi);
+
+    testHandler.register_test([](Tracee& tracee, unsigned long long arg) {
+        auto str = tracee.read_string(arg);
+        REQUIRE(str == "This is a string");
+    });
+
+    REQUIRE(traceApi.exec("../testbuddy/testbuddy", { "testbuddy", "string" }));
+
+    while(traceApi.loop());
+}
+
+TEST_CASE("PTrace string custom cap") {
+    TraceApi traceApi;
+    TestHandler testHandler(traceApi);
+
+    testHandler.register_test([](Tracee& tracee, unsigned long long arg) {
+        auto str = tracee.read_string(arg, 25);
+        REQUIRE(str == std::string(25, 'a'));
+    });
+
+    REQUIRE(traceApi.exec("../testbuddy/testbuddy", { "testbuddy", "string_cap" }));
+
+    while(traceApi.loop());
+}
+
+TEST_CASE("PTrace string default cap") {
+    TraceApi traceApi;
+    TestHandler testHandler(traceApi);
+
+    testHandler.register_test([](Tracee& tracee, unsigned long long arg) {
+        auto str = tracee.read_string(arg);
+        REQUIRE(str == std::string(PATH_MAX, 'a'));
+    });
+
+    REQUIRE(traceApi.exec("../testbuddy/testbuddy", { "testbuddy", "string_def" }));
+
+    while(traceApi.loop());
 }
 
 TEST_CASE("Simple open and close") {
