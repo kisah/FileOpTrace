@@ -28,7 +28,7 @@ struct OpRecord {
     int error;
 };
 
-class TestLogger : public Logger {
+class TestLogger : public FileOpTrace::Logger {
 public:
     virtual void open(std::string binpath, pid_t pid, std::string path, int mode, int fd);
     virtual void open_failed(std::string binpath, pid_t pid, std::string path, int mode, int error);

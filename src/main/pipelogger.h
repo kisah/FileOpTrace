@@ -2,6 +2,8 @@
 #include <fstream>
 #include "logger.h"
 
+namespace FileOpTrace {
+
 class PipeLogger : public Logger {
 public:
     bool connect(std::string pipe_path);
@@ -16,3 +18,5 @@ public:
 private:
     std::ofstream m_pipe;
 };
+
+}

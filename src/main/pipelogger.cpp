@@ -3,6 +3,8 @@
 #include <unistd.h>
 #include "pipelogger.h"
 
+using namespace FileOpTrace;
+
 bool PipeLogger::connect(std::string pipe_path) {
     if(access(pipe_path.c_str(), F_OK))
         return false;

@@ -4,6 +4,8 @@
 #include <sys/stat.h>
 #include "frontend.h"
 
+using namespace FileOpTrace;
+
 FrontEnd* FrontEnd::instance;
 
 FrontEnd::FrontEnd(std::string pipe_path) : m_path(pipe_path) {

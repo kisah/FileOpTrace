@@ -3,6 +3,8 @@
 #include <string.h>
 #include "stdlogger.h"
 
+using namespace FileOpTrace;
+
 void StdErrLogger::open(std::string binpath, pid_t pid, std::string path, int mode, int fd) {
     auto str_mode = mode == O_RDONLY ? "read" : (mode == O_WRONLY ? "write" : "read/write");
     std::cerr << "[\"" << binpath << "\" (PID: " << pid << ")] " << "open at path: \"" << path << "\" for " << str_mode << ", fd: " << fd << std::endl;

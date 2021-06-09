@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include "syscall.h"
 
+using namespace FileOpTrace;
 using namespace PTrace;
 
 SyscallHandler::SyscallHandler(TraceApi& tracer, Logger* logger) : m_logger(*logger) {

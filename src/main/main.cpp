@@ -6,6 +6,7 @@
 #include "stdlogger.h"
 #include "syscall.h"
 
+using namespace FileOpTrace;
 using namespace PTrace;
 
 int main(int argc, char** argv) {

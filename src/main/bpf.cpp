@@ -5,6 +5,8 @@
 #include <sys/prctl.h>
 #include <stddef.h>
 
+using namespace PTrace;
+
 struct sock_filter filter[] = {
     BPF_STMT(BPF_LD | BPF_W | BPF_ABS, (offsetof(struct seccomp_data, nr))),
 

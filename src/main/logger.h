@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 
+namespace FileOpTrace {
+
 class Logger {
 public:
     Logger() {}
@@ -14,3 +16,5 @@ public:
     virtual void remove(std::string binpath, pid_t pid, std::string path) = 0;
     virtual void mkdir(std::string binpath, pid_t pid, std::string path) = 0;
 };
+
+}

@@ -8,6 +8,7 @@
 #include "../main/syscall.h"
 #include "testlogger.h"
 
+using namespace FileOpTrace;
 using namespace PTrace;
 using namespace Tests;
 

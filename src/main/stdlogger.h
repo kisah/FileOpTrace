@@ -1,6 +1,8 @@
 #pragma once
 #include "logger.h"
 
+namespace FileOpTrace {
+
 class StdErrLogger : public Logger {
 public:
     virtual void open(std::string binpath, pid_t pid, std::string path, int mode, int fd);
@@ -12,3 +14,5 @@ public:
     virtual void remove(std::string binpath, pid_t pid, std::string path);
     virtual void mkdir(std::string binpath, pid_t pid, std::string path);
 };
+
+}

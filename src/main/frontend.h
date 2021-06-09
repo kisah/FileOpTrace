@@ -1,6 +1,8 @@
 #pragma once
 #include <fstream>
 
+namespace FileOpTrace {
+
 class FrontEnd {
 public:
     FrontEnd(std::string pipe_path);
@@ -15,3 +17,5 @@ private:
     std::string m_path;
     std::ifstream m_pipe;
 };
+
+}

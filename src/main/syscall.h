@@ -4,6 +4,8 @@
 #include "ptrace.h"
 #include "logger.h"
 
+namespace FileOpTrace {
+
 class SyscallHandler {
 public:
     SyscallHandler(PTrace::TraceApi& tracer, Logger* logger);
@@ -20,3 +22,5 @@ private:
     std::map<std::pair<pid_t, int>, std::string> m_fd_map;
     Logger& m_logger;
 };
+
+}
