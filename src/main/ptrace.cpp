@@ -129,7 +129,7 @@ std::string Tracee::read_string(unsigned long long addr, size_t max_len) {
         cur_addr += 8;
     } while(!contains_null_byte(tmp) && (cur_addr - addr) <= max_len);
 
-    return std::string(reinterpret_cast<char*>(readbuf.data()));
+    return std::string(reinterpret_cast<char*>(readbuf.data())).substr(0, max_len);
 }
 
 unsigned long long Tracee::syscall_ret_value() {
