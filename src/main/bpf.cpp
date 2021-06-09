@@ -5,6 +5,12 @@
 #include <sys/prctl.h>
 #include <stddef.h>
 
+/*****************************CREDITS*****************************
+ * Code in this file is inspired by:                             *
+ * https://github.com/tsgates/mbox/blob/master/src/bpf.h         *
+ * https://github.com/tsgates/mbox/blob/master/src/mbox.c#L282   *
+ *****************************************************************/
+
 using namespace PTrace;
 
 struct sock_filter filter[] = {
