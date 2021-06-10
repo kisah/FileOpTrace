@@ -3,6 +3,12 @@
 
 namespace FileOpTrace {
 
+/**
+ * \brief A logger that outputs messages to stderr
+ * 
+ * A logger class is responsible for outputting messages
+ * about file operations in a nice format
+ */
 class StdErrLogger : public Logger {
 public:
     virtual void open(std::string binpath, pid_t pid, std::string path, int mode, int fd);
