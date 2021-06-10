@@ -129,8 +129,13 @@ protected:
     void set_flag(bool flag) { m_flag = flag; }
     
 private:
+    /// Process id
     pid_t m_pid;
+
+    /// Executable path
     std::string m_binpath;
+
+    /// A boolean flag, set when the tracee forks/clones or execs
     bool m_flag = false;
 };
 

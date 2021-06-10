@@ -67,8 +67,13 @@ protected:
     void trace_handler(PTrace::Tracee& tracee, int status);
 
 private:
+    /// Current working directory path
     std::string m_cwd;
+
+    /// A map binding file descriptors to their respective path
     std::map<std::pair<pid_t, int>, std::string> m_fd_map;
+
+    /// A reference to an active Logger instance
     Logger& m_logger;
 };
 
