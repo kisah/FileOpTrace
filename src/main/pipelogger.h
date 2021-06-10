@@ -5,7 +5,7 @@
 namespace FileOpTrace {
 
 /**
- * \brief A logger that outputs messages to a named pipe, which is connected to a running Frontend
+ * \brief A logger that outputs messages to a named pipe, which is connected to a running FrontEnd
  * 
  * A logger is responsible for outputting messages
  * about file operations in a nice format
