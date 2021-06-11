@@ -10,7 +10,7 @@ TestHandler(PTrace::TraceApi& tracer);
 void register_test(std::function<void(PTrace::Tracee&, unsigned long long)> test) { m_test = test; }
 
 protected:
-void trace_handler(PTrace::Tracee& tracee, int status);
+void trace_handler(PTrace::TraceEvent event, PTrace::Tracee& tracee, int status);
 
 private:
 std::function<void(PTrace::Tracee&, unsigned long long)> m_test;

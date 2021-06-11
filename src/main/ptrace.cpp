@@ -66,7 +66,7 @@ bool TraceApi::loop() {
         if(WSTOPSIG(status) == SIGTRAP && ((status >> 16) == PTRACE_EVENT_CLONE || (status >> 16) == PTRACE_EVENT_FORK)) {
             pid_t child_pid;
             ptrace(PTRACE_GETEVENTMSG, tracee.get_pid(), NULL, &child_pid);
-            Tracee t(child_pid, tracee.get_binpath());
+            Tracee t(child_pid, tracee.get_binpath(), tracee.get_pid());
             t.set_flag(true);
             toAdd.emplace_back(t);
             tracee.cont(0);
@@ -77,6 +77,7 @@ bool TraceApi::loop() {
         }
         else if(WSTOPSIG(status) == SIGSTOP && tracee.get_flag()) {
             tracee.set_flag(false);
+            m_eventHandler(TRACE_CHILD_CREATED, tracee, 0);
             tracee.cont(0);
         }
         else if(status) {
@@ -85,7 +86,7 @@ bool TraceApi::loop() {
                 tracee.set_flag(false);
             }
             if(m_eventHandler)
-                m_eventHandler(tracee, status);
+                m_eventHandler(TRACE_SIGNAL, tracee, status);
         }
     }
 
@@ -102,7 +103,7 @@ bool TraceApi::loop() {
     return m_procs.size() > 0;
 }
 
-Tracee::Tracee(pid_t pid, std::string binpath) : m_pid(pid), m_binpath(binpath) {}
+Tracee::Tracee(pid_t pid, std::string binpath, pid_t ppid) : m_pid(pid), m_binpath(binpath), m_ppid(ppid) {}
 
 void Tracee::cont(int signal) {
     ptrace(PTRACE_CONT, get_pid(), NULL, signal);

@@ -60,15 +60,34 @@ protected:
     std::string resolve_path(std::string& path, pid_t pid, int parent_fd);
 
     /**
+     * \brief Get the current working directory of a process
+     * \warning For internal use only
+     * \param pid Process id
+     * \return Current working directory path
+     */
+    std::string& get_cwd(pid_t pid);
+
+    /**
+     * \brief Set the current working directory of a process
+     * \warning For internal use only
+     * \param pid Process id
+     * \param cwd New current working directory path
+     */
+    void set_cwd(pid_t pid, std::string cwd);
+
+    /**
      * \brief A handler that receives trace events from PTrace::TraceApi and calls into the logger
      * \param tracee A reference to a PTrace::Tracee instance, representing a particular process
      * \param status A waitpid status
      */
-    void trace_handler(PTrace::Tracee& tracee, int status);
+    void trace_handler(PTrace::TraceEvent event, PTrace::Tracee& tracee, int status);
 
 private:
-    /// Current working directory path
-    std::string m_cwd;
+    /// Current working directory path of the tracer
+    std::string m_tracer_cwd;
+
+    /// A map that stores current working directories of all processes
+    std::map<pid_t, std::string> m_cwd_map;
 
     /// A map binding file descriptors to their respective path
     std::map<std::pair<pid_t, int>, std::string> m_fd_map;

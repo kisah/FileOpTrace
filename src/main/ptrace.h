@@ -9,6 +9,11 @@
 namespace PTrace {
 
 class Tracee;
+
+enum TraceEvent {
+    TRACE_CHILD_CREATED,
+    TRACE_SIGNAL
+};
     
 /**
  * \brief A simple c++ ptrace wrapper
@@ -27,7 +32,7 @@ public:
      * \brief Register a handler of trace events
      * \param handler The handler callback
      */
-    void register_handler(std::function<void(Tracee&, int)> handler) { m_eventHandler = handler; }
+    void register_handler(std::function<void(TraceEvent, Tracee&, int)> handler) { m_eventHandler = handler; }
 
     /**
      * \brief Poll all traced processes
@@ -49,7 +54,7 @@ private:
     std::vector<Tracee> m_procs;
 
     /// Trace event handler callback
-    std::function<void(Tracee&, int)> m_eventHandler;
+    std::function<void(TraceEvent, Tracee&, int)> m_eventHandler;
 };
 
 /**
@@ -79,6 +84,8 @@ public:
      * \param binpath The executable path
      */
     void set_binpath(std::string binpath) { m_binpath = binpath; }
+
+    pid_t get_parent_pid() { return m_ppid; }
 
     /**
      * \brief Continue the tracee while sending a signal to it
@@ -111,8 +118,9 @@ protected:
      * \warning For internal use only
      * \param pid Tracee process id
      * \param binpath Tracee process executable path
+     * \param ppid Parent process id (can be -1)
      */
-    Tracee(pid_t pid, std::string binpath);
+    Tracee(pid_t pid, std::string binpath, pid_t ppid = -1);
 
     /**
      * \brief Get the boolean flag
@@ -134,6 +142,9 @@ private:
 
     /// Executable path
     std::string m_binpath;
+
+    /// Parent process id
+    pid_t m_ppid;
 
     /// A boolean flag, set when the tracee forks/clones or execs
     bool m_flag = false;
