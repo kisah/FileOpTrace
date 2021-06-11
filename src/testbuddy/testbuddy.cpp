@@ -111,6 +111,13 @@ void test_mkdirat() {
     closedir(dir);
 }
 
+void test_forked_chdir(bool is_child) {
+    if(is_child)
+        chdir("../dir2");
+    int fd = open("hello", O_RDWR);
+    close(fd);
+}
+
 int main(int argc, char** argv) {
     pid_t pid = 0;
 
@@ -119,14 +126,19 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    if(argc >= 3 && atoi(argv[2]) == 1) {
-        pid = fork();
-        if(pid) {
-            int status;
-            wait(&status);
-        }
-        else if(pid < 0) {
-            return 1;
+    if(argc >= 3) {
+        int fork_opt = atoi(argv[2]);
+        if(fork_opt >= 1) {
+            if(fork_opt == 2)
+                chdir("dir1");
+            pid = fork();
+            if(pid) {
+                int status;
+                wait(&status);
+            }
+            else if(pid < 0) {
+                return 1;
+            }
         }
     }
     
@@ -173,6 +185,8 @@ int main(int argc, char** argv) {
         test_mkdiratcwd();
     else if(test == "mkdirat")
         test_mkdirat();
+    else if(test == "forked_chdir")
+        test_forked_chdir(pid == 0);
 
     close(-10); //mark the end of tests
 

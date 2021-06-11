@@ -477,3 +477,51 @@ TEST_CASE("Fork") {
 
     REQUIRE_NOTHROW(logger.expect_empty_list());
 }
+
+TEST_CASE("Multiprocessed chdir") {
+    TestLogger logger;
+    std::array<char, PATH_MAX> buf;
+    std::string full_path1;
+    std::string full_path2;
+
+    REQUIRE(mkdir("dir1", 0755) >= 0);
+    CHECK(mkdir("dir2", 0755) >= 0);
+
+    CHECK(!close(open("dir1/hello", O_WRONLY | O_CREAT, 0644)));
+    CHECK(!close(open("dir2/hello", O_WRONLY | O_CREAT, 0644)));
+    
+    buf.fill(0);
+    realpath("dir1/hello", buf.data());
+    full_path1 = std::string(buf.data());
+    CHECK(full_path1.length() > 0);
+    
+    buf.fill(0);
+    realpath("dir2/hello", buf.data());
+    full_path2 = std::string(buf.data());
+    CHECK(full_path2.length() > 0);
+
+    CHECK(run_and_wait(&logger, "../testbuddy/testbuddy", { "testbuddy", "forked_chdir", "2" }));
+
+    CHECK(!access("/tmp/testpids", F_OK));
+
+    pid_t main;
+    pid_t child;
+    std::ifstream pidInfo("/tmp/testpids");
+    pidInfo >> main >> child;
+    CHECK(main > 0);
+    CHECK(child > 0);
+
+    unlink("/tmp/testpids");
+
+    CHECK_NOTHROW(logger.expect_open(child, full_path2, O_RDWR));
+    CHECK_NOTHROW(logger.expect_close(child, full_path2));
+    CHECK_NOTHROW(logger.expect_open(main, full_path1, O_RDWR));
+    CHECK_NOTHROW(logger.expect_close(main, full_path1));
+
+    unlink("dir1/hello");
+    unlink("dir2/hello");
+    rmdir("dir1");
+    rmdir("dir2");
+
+    REQUIRE_NOTHROW(logger.expect_empty_list());
+}
