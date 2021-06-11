@@ -111,14 +111,25 @@ void SyscallHandler::trace_handler(TraceEvent event, Tracee& tracee, int status)
                     ret_fd = static_cast<int>(tracee.syscall_ret_value());
                     path = tracee.read_string(regs.rsi);
                     if(ret_fd < 0) {
-                        m_logger.open_failed(tracee.get_binpath(), tracee.get_pid(), path, static_cast<int>(regs.rdx), -ret_fd);
+                        m_logger.open_failed(tracee.get_binpath(), tracee.get_pid(), path, static_cast<int>(regs.rdx) & 3, -ret_fd);
                         break;
                     }
                     if(path.length() && path[0] != '/')
                         path = resolve_path(path, tracee.get_pid(), static_cast<int>(regs.rdi));
-                    if(ret_fd >= 0)
-                        add_fd_path(tracee.get_pid(), ret_fd, path);
+                    add_fd_path(tracee.get_pid(), ret_fd, path);
                     m_logger.open(tracee.get_binpath(), tracee.get_pid(), path, static_cast<int>(regs.rdx) & 3, ret_fd);
+                    break;
+                case __NR_open:
+                    ret_fd = static_cast<int>(tracee.syscall_ret_value());
+                    path = tracee.read_string(regs.rdi);
+                    if(ret_fd < 0) {
+                        m_logger.open_failed(tracee.get_binpath(), tracee.get_pid(), path, static_cast<int>(regs.rsi) & 3, -ret_fd);
+                        break;
+                    }
+                    if(path.length() && path[0] != '/')
+                        path = resolve_path(path, tracee.get_pid(), AT_FDCWD);
+                    add_fd_path(tracee.get_pid(), ret_fd, path);
+                    m_logger.open(tracee.get_binpath(), tracee.get_pid(), path, static_cast<int>(regs.rsi) & 3, ret_fd);
                     break;
                 case __NR_read:
                     fd = static_cast<int>(regs.rdi);
