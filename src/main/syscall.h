@@ -77,6 +77,7 @@ protected:
 
     /**
      * \brief A handler that receives trace events from PTrace::TraceApi and calls into the logger
+     * \param event The event type (either TRACE_CHILD_CREATED or TRACE_SIGNAL)
      * \param tracee A reference to a PTrace::Tracee instance, representing a particular process
      * \param status A waitpid status
      */
