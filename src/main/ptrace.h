@@ -37,6 +37,10 @@ public:
     /**
      * \brief Poll all traced processes
      * \return True if there are some processes running, false if there are no running processes left
+     * 
+     * The loop is responsible for catching the necessary ptrace events and
+     * handling things like fork/clone and exec,
+     * all of the other event types are passed to the registered handler
      */
     bool loop();
 
@@ -85,6 +89,10 @@ public:
      */
     void set_binpath(std::string binpath) { m_binpath = binpath; }
 
+    /**
+     * \brief Get the parent process id
+     * \return Parent process id or -1
+     */
     pid_t get_parent_pid() { return m_ppid; }
 
     /**

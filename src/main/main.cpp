@@ -9,6 +9,9 @@
 using namespace FileOpTrace;
 using namespace PTrace;
 
+/**
+ * \brief Entry point
+ */
 int main(int argc, char** argv) {
     CLI::App app{"A ptrace based file operation logger"};
     app.prefix_command();

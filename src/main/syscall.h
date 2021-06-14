@@ -80,6 +80,9 @@ protected:
      * \param event The event type (either TRACE_CHILD_CREATED or TRACE_SIGNAL)
      * \param tracee A reference to a PTrace::Tracee instance, representing a particular process
      * \param status A waitpid status
+     * 
+     * The handler is responsible for determining the syscall type,
+     * resolving paths (if necessary) and invoking the appropriate logger function
      */
     void trace_handler(PTrace::TraceEvent event, PTrace::Tracee& tracee, int status);
 
